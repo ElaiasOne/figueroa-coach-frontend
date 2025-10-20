@@ -1,4 +1,13 @@
-:root { --ion-color-primary: #2dd4bf; }
+:root {
+  --ion-background-color: #ffffff;
+  --ion-text-color: #111111;
+  --ion-item-background: #ffffff;
+  --ion-color-light: #f6f7f9;
+}
 body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
 .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
 .multiline { white-space: pre-wrap; word-break: break-word; line-height: 1.35; }
+/* Ignora el dark del sistema */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: light; }
+}

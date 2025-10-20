@@ -18,15 +18,13 @@ import '@ionic/vue/css/flex-utils.css'
 
 /* Theme variables */
 import './assets/theme.css'
-import { isPlatform } from '@ionic/vue'
 
 import App from './App.vue'
 
+document.body.classList.remove('dark');
+
 const app = createApp(App).use(IonicVue).use(router)
 
-if (isPlatform('mobile') || isPlatform('mobileweb')) {
-  document.body.classList.remove('dark')  // fuerza modo claro
-}
 router.isReady().then(() => {
   app.mount('#app')
 })

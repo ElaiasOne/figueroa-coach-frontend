@@ -394,10 +394,12 @@ onMounted(async () => {
 .btns ion-button { margin-left: 6px; }
 
 /* Cards y tipografía: respetan modo claro/oscuro */
-ion-card, ion-card-content, ion-card-header {
-  background: var(--ion-item-background);
+ion-card, ion-card-content, ion-card-header { 
+  background: var(--ion-item-background); 
   color: var(--ion-text-color);
 }
+strong, small, p, h2, h3, ion-label { color: var(--ion-text-color); }
+
 .title, strong, small, p, h2, h3 {
   color: var(--ion-text-color);
 }
