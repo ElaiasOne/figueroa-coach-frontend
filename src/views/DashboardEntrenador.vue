@@ -50,12 +50,12 @@
                   Objetivo: {{ a.peso_objetivo_kg || '-' }} kg
                 </small>
               </ion-label>
-
-              <div slot="end" class="btns">
+            
+               <!--<div slot="end" class="btns">
                 <ion-button size="small" fill="outline" @click="preEditarAlumno(a)">Editar</ion-button>
                 <ion-button size="small" fill="clear" @click="usarAlumnoParaPlan(a.id)">Usar plan</ion-button>
                 <ion-button size="small" fill="clear" @click="filtrarPlanificaciones(a.id)">Ver planes</ion-button>
-              </div>
+              </div>-->
             </ion-item>
           </ion-list>
         </div>
