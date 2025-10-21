@@ -33,34 +33,33 @@
           <ion-button class="mt" size="small" @click="cargarAlumnos">Buscar</ion-button>
 
           <ion-list class="mt">
-  <ion-item lines="full">
-    <ion-label><strong>Resultados</strong></ion-label>
-  </ion-item>
+            <ion-item lines="full">
+              <ion-label><strong>Resultados</strong></ion-label>
+            </ion-item>
 
-  <ion-item-sliding v-for="a in alumnosLista" :key="a.id">
-    <ion-item>
-      <ion-label>
-        <div class="row-between">
-          <strong>#{{ a.id }} — {{ a.nombre || '(Sin nombre)' }}</strong>
-          <ion-badge color="medium">{{ a.email || '—' }}</ion-badge>
-        </div>
-        <small>
-          Sexo: {{ a.sexo || '-' }} · Edad: {{ a.edad || '-' }} ·
-          Altura: {{ a.altura_cm || '-' }} cm ·
-          Peso: {{ a.peso_actual_kg || '-' }} kg ·
-          Objetivo: {{ a.peso_objetivo_kg || '-' }} kg
-        </small>
-      </ion-label>
-    </ion-item>
+            <ion-item v-for="a in alumnosLista" :key="a.id">
+              <ion-label>
+                <div class="row-between">
+                  <strong>#{{ a.id }} — {{ a.nombre || '(Sin nombre)' }}</strong>
+                  <ion-badge color="medium">{{ a.email || '—' }}</ion-badge>
+                </div>
+                <small>
+                  Sexo: {{ a.sexo || '-' }} · Edad: {{ a.edad || '-' }} ·
+                  Altura: {{ a.altura_cm || '-' }} cm ·
+                  Peso: {{ a.peso_actual_kg || '-' }} kg ·
+                  Objetivo: {{ a.peso_objetivo_kg || '-' }} kg
+                </small>
 
-    <ion-item-options side="end">
-      <ion-item-option color="medium" @click="preEditarAlumno(a)">Editar</ion-item-option>
-      <ion-item-option color="primary" @click="usarAlumnoParaPlan(a.id)">Usar plan</ion-item-option>
-      <ion-item-option color="tertiary" @click="filtrarPlanificaciones(a.id)">Ver planes</ion-item-option>
-    </ion-item-options>
-  </ion-item-sliding>
-</ion-list>
-
+                <div slot="end" class="btns">
+                <ion-button size="small" fill="outline" @click="preEditarAlumno(a)">Editar</ion-button>
+                <ion-button size="small" fill="clear" @click="usarAlumnoParaPlan(a.id)">Usar plan</ion-button>
+                <ion-button size="small" fill="clear" @click="filtrarPlanificaciones(a.id)">Ver planes</ion-button>
+              </div>
+              </ion-label>
+            
+              
+            </ion-item>
+          </ion-list>
         </div>
 
         <!-- FAB: Crear alumno -->
