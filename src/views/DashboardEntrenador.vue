@@ -406,7 +406,7 @@ ion-list ion-item ion-label * {
 .row-end { display: flex; justify-content: flex-end; gap: 8px; }
 .mt { margin-top: 12px; }
 .ml { margin-left: 8px; }
-.btns ion-button { margin-left: 1px; }
+.btns ion-button { margin-left: 20px; }
 
 .modal-container {
   padding: 16px;
