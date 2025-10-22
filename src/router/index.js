@@ -7,7 +7,7 @@ import PlanificacionDetalle from '@/views/PlanificacionDetalle.vue'
 
 const routes = [
   { name: 'Root', path: '/', redirect: '/login' },
-  { name: 'Login', path: '/login', component: LoginPage, meta: { hideTopBar: true }  },
+  { name: 'Login', path: '/login', component: LoginPage },
 
   // Accesos por rol
   { name: 'Coach', path: '/coach', component: DashboardEntrenador, meta: { role: 'ENTRENADOR' } },

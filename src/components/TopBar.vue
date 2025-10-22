@@ -7,12 +7,12 @@
       <div slot="end" class="topbar-actions">
         <ion-button color="dark" fill="solid" size="small" class="topbar-btn" @click="goHome">
           <ion-icon :icon="homeOutline" slot="start" />
-          <span class="btn-text"></span>
+         <!-- <span class="btn-text">Inicio</span> -->
         </ion-button>
 
         <ion-button color="danger" fill="solid" size="small" class="topbar-btn" @click="logout">
           <ion-icon :icon="logOutOutline" slot="start" />
-          <span class="btn-text"></span>
+          <!--  <span class="btn-text">Salir</span> -->
         </ion-button>
       </div>
     </ion-toolbar>
