@@ -1,3 +1,6 @@
+// frontend_figueroa_coach/src/router/index.js
+
+
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import LoginPage from '@/views/LoginPage.vue'
 import DashboardEntrenador from '@/views/DashboardEntrenador.vue'

@@ -1,3 +1,6 @@
+ <!--frontend_figueroa_coach/src/App.vue-->
+
+
 <template>
   <ion-app>
     <ion-router-outlet />

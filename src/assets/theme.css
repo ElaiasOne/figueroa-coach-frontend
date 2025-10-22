@@ -1,13 +1,101 @@
+/* frontend_figueroa_coach/src/assets/theme.css */
+/* ====== FIGUEROA COACH - THEME (MÓVIL PRIMERO) ====== */
 :root {
   --ion-background-color: #ffffff;
   --ion-text-color: #111111;
   --ion-item-background: #ffffff;
   --ion-color-light: #f6f7f9;
+
+  /* tamaños táctiles y tipografía adaptable */
+  --tap-target: 48px;
+  --fc-h1: clamp(20px, 4.5vw, 28px);
+  --fc-h2: clamp(18px, 4vw, 24px);
+  --fc-text: clamp(14px, 3.6vw, 16px);
+
+  /* ancho máximo cómodo en pantallas grandes */
+  --container-max: 1100px;
 }
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
-.card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+    'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+/* Tipografía adaptable */
+h1 { font-size: var(--fc-h1); }
+h2 { font-size: var(--fc-h2); }
+body, ion-item, ion-label, ion-input, ion-textarea { font-size: var(--fc-text); }
+
+/* Cards “stack” para móvil */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  margin-block: 10px;
+}
 .multiline { white-space: pre-wrap; word-break: break-word; line-height: 1.35; }
-/* Ignora el dark del sistema */
+
+/* Contenedor centrado en pantallas grandes */
+.page-container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: 12px;
+}
+
+/* Segmentos desplazables en móvil */
+.seg {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+.seg::-webkit-scrollbar { display: none; }
+
+/* Botones e inputs táctiles */
+ion-button, .ion-button { min-height: var(--tap-target); }
+ion-item {
+  --padding-start: 10px;
+  --inner-padding-end: 10px;
+  min-height: var(--tap-target);
+}
+
+/* Listas “inset” limpias en móvil */
+ion-list { --background: transparent; }
+ion-list.list-inset { margin: 0; }
+
+/* Grilla responsiva */
+.res-grid { padding: 0; }
+
+/* Footer / FAB despejado de teclado y safe areas */
+ion-content { --padding-bottom: 80px; }
+@supports(padding:max(0px)) {
+  ion-content { --padding-bottom: max(80px, env(safe-area-inset-bottom)); }
+}
+
+/* Helpers de visibilidad */
+.hide-sm { display: none; }
+@media (min-width: 768px) { .hide-sm { display: initial; } }
+@media (max-width: 767.98px) { .hide-md-up { display: none; } }
+
+/* Tablas a tarjetas en móvil */
+.table-like { width: 100%; border-collapse: collapse; }
+@media (max-width: 767.98px) {
+  .table-like thead { display: none; }
+  .table-like tr { display: block; margin-bottom: 12px; }
+  .table-like td {
+    display: grid; grid-template-columns: 120px 1fr;
+    padding: 8px 12px; background: #fff; border-radius: 12px;
+  }
+  .table-like td::before { content: attr(data-label); font-weight: 600; color: #666; }
+}
+
+/* Forzar claro si el sistema está en dark */
 @media (prefers-color-scheme: dark) {
   :root { color-scheme: light; }
+}
+
+/* Reduce motion si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
 }

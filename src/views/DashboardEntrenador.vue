@@ -1,254 +1,121 @@
+<!--frontend_figueroa_coach/src/views/DashboardEntrenador.vue-->
+
 <template>
   <ion-page>
     <TopBar />
     <ion-content class="ion-padding">
+      <div class="page-container">
+        <!-- Tabs/segment scrollable -->
+        <ion-segment v-model="tab" class="seg" scrollable>
+          <ion-segment-button value="alumnos"><ion-label>Alumnos</ion-label></ion-segment-button>
+          <ion-segment-button value="planes"><ion-label>Planes</ion-label></ion-segment-button>
+          <ion-segment-button value="plan-nuevo"><ion-label>Plan nuevo</ion-label></ion-segment-button>
+        </ion-segment>
 
-      <!-- Tabs simples -->
-      <ion-segment value="alumnos" @ionChange="onTabChange" class="seg">
-        <ion-segment-button value="alumnos">
-          <ion-label>Alumnos</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="plan-nuevo">
-          <ion-label>Plan nuevo</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="planes">
-          <ion-label>Planes</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-
-      <!-- ================== TAB: ALUMNOS ================== -->
-      <div v-if="tab === 'alumnos'">
-        <div class="card">
-          <div class="row-between">
-            <h2 class="title">Alumnos</h2>
-            <ion-button size="small" fill="clear" @click="cargarAlumnos">Actualizar</ion-button>
-          </div>
-
-          <ion-searchbar
-            placeholder="Buscar por nombre o email"
-            v-model="buscar"
-            @ionClear="cargarAlumnos"
-            @keyup.enter="cargarAlumnos"
-          />
-          <ion-button class="mt" size="small" @click="cargarAlumnos">Buscar</ion-button>
-
-          <ion-list class="mt">
-            <ion-item lines="full">
-              <ion-label><strong>Resultados</strong></ion-label>
-            </ion-item>
-
-            <ion-item v-for="a in alumnosLista" :key="a.id">
-              <ion-label>
-                <div class="row-between">
-                  <strong>#{{ a.id }} — {{ a.nombre || '(Sin nombre)' }}</strong>
-                  <ion-badge color="medium">{{ a.email || '—' }}</ion-badge>
-                </div>
-                <small>
-                  Sexo: {{ a.sexo || '-' }} · Edad: {{ a.edad || '-' }} ·
-                  Altura: {{ a.altura_cm || '-' }} cm ·
-                  Peso: {{ a.peso_actual_kg || '-' }} kg ·
-                  Objetivo: {{ a.peso_objetivo_kg || '-' }} kg
-                </small>
-              </ion-label>
-            
-              <div slot="end" class="btns">
-                <ion-button size="small" fill="outline" @click="preEditarAlumno(a)">Editar</ion-button>
-                <ion-button size="small" fill="clear" @click="usarAlumnoParaPlan(a.id)">Usar plan</ion-button>
-                <ion-button size="small" fill="clear" @click="filtrarPlanificaciones(a.id)">Ver planes</ion-button>
+        <ion-grid class="res-grid">
+          <ion-row v-if="tab==='alumnos'">
+            <ion-col size="12" size-md="6">
+              <div class="card">
+                <h2 class="title">Alumnos</h2>
+                <ion-searchbar placeholder="Buscar" v-model="search" @ionInput="fetchAlumnosDebounced" />
+                <ion-list class="list-inset">
+                  <ion-item
+                    v-for="al in alumnos" :key="al.id"
+                    button detail
+                    @click="filtrarPorAlumno(al.id)">
+                    <ion-label>
+                      <h3>{{ al.nombre }}</h3>
+                      <p>{{ al.email }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+                <ion-skeleton-text v-if="loadingAlumnos" :animated="true" style="height: 80px" />
               </div>
-            </ion-item>
-          </ion-list>
-        </div>
+            </ion-col>
 
-        <!-- FAB: Crear alumno -->
-        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-          <ion-fab-button @click="abrirModalCrear = true">
-            <ion-icon :icon="add" />
-          </ion-fab-button>
-        </ion-fab>
+            <ion-col size="12" size-md="6">
+              <div class="card">
+                <h2 class="title">Planes recientes</h2>
+                <ion-list class="list-inset">
+                  <ion-item
+                    v-for="p in planes" :key="p.id"
+                    button detail
+                    @click="$router.push(`/planificacion/${p.id}`)">
+                    <ion-label>
+                      <h3>{{ p.titulo }}</h3>
+                      <p>Alumno: {{ p.alumno_nombre }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+                <ion-skeleton-text v-if="loadingPlanes" :animated="true" style="height: 80px" />
+              </div>
+            </ion-col>
+          </ion-row>
 
-        <!-- Modal: Crear Alumno -->
-        <ion-modal :isOpen="abrirModalCrear" @didDismiss="abrirModalCrear=false">
-          <div class="modal-container">
-            <h3>Crear Alumno</h3>
+          <ion-row v-else-if="tab==='planes'">
+            <ion-col size="12">
+              <div class="card">
+                <h2 class="title">Todos los planes</h2>
+                <ion-list class="list-inset">
+                  <ion-item
+                    v-for="p in planes" :key="p.id"
+                    button detail
+                    @click="$router.push(`/planificacion/${p.id}`)">
+                    <ion-label>
+                      <h3>{{ p.titulo }}</h3>
+                      <p>{{ p.descripcion || 'Sin descripción' }}</p>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+              </div>
+            </ion-col>
+          </ion-row>
 
-            <ion-item>
-              <ion-label position="stacked">Nombre</ion-label>
-              <ion-input v-model="alumno.nombre" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Email</ion-label>
-              <ion-input v-model="alumno.email" type="email" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Password</ion-label>
-              <ion-input v-model="alumno.password" type="password" />
-            </ion-item>
-
-            <ion-item>
-              <ion-label position="stacked">Sexo</ion-label>
-              <ion-select v-model="alumno.sexo" placeholder="Seleccionar" interface="popover">
-                <ion-select-option value="M">M</ion-select-option>
-                <ion-select-option value="F">F</ion-select-option>
-                <ion-select-option value="X">X</ion-select-option>
-              </ion-select>
-            </ion-item>
-
-            <ion-item>
-              <ion-label position="stacked">Edad</ion-label>
-              <ion-input v-model.number="alumno.edad" type="number" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Altura (cm)</ion-label>
-              <ion-input v-model.number="alumno.altura_cm" type="number" step="0.1" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Peso actual (kg)</ion-label>
-              <ion-input v-model.number="alumno.peso_actual_kg" type="number" step="0.1" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Peso objetivo (kg)</ion-label>
-              <ion-input v-model.number="alumno.peso_objetivo_kg" type="number" step="0.1" />
-            </ion-item>
-
-            <div class="row-end mt">
-              <ion-button @click="crearAlumno">Guardar</ion-button>
-              <ion-button fill="clear" @click="abrirModalCrear=false">Cancelar</ion-button>
-            </div>
-            <ion-text color="success" v-if="okAlumno">Alumno creado ✅</ion-text>
-            <ion-text color="danger" v-if="errAlumno">{{ errAlumno }}</ion-text>
-          </div>
-        </ion-modal>
-
-        <!-- Modal: Editar Alumno -->
-        <ion-modal :isOpen="!!editAlumno" @didDismiss="cancelarEdicion">
-          <div class="modal-container">
-            <h3>Editar alumno #{{ editAlumno ? editAlumno.id : '' }}</h3>
-
-            <ion-item>
-              <ion-label position="stacked">Nombre</ion-label>
-              <ion-input v-model="editAlumno.nombre" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Email</ion-label>
-              <ion-input v-model="editAlumno.email" type="email" />
-            </ion-item>
-
-            <ion-item>
-              <ion-label position="stacked">Sexo</ion-label>
-              <ion-select v-model="editAlumno.sexo" placeholder="Seleccionar" interface="popover">
-                <ion-select-option value="M">M</ion-select-option>
-                <ion-select-option value="F">F</ion-select-option>
-                <ion-select-option value="X">X</ion-select-option>
-              </ion-select>
-            </ion-item>
-
-            <ion-item>
-              <ion-label position="stacked">Edad</ion-label>
-              <ion-input v-model.number="editAlumno.edad" type="number" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Altura (cm)</ion-label>
-              <ion-input v-model.number="editAlumno.altura_cm" type="number" step="0.1" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Peso actual (kg)</ion-label>
-              <ion-input v-model.number="editAlumno.peso_actual_kg" type="number" step="0.1" />
-            </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Peso objetivo (kg)</ion-label>
-              <ion-input v-model.number="editAlumno.peso_objetivo_kg" type="number" step="0.1" />
-            </ion-item>
-
-            <div class="row-end mt">
-              <ion-button @click="guardarAlumno">Guardar</ion-button>
-              <ion-button fill="clear" @click="cancelarEdicion">Cancelar</ion-button>
-            </div>
-            <ion-text color="success" v-if="okEdit">Actualizado ✅</ion-text>
-            <ion-text color="danger" v-if="errEdit">{{ errEdit }}</ion-text>
-          </div>
-        </ion-modal>
+          <ion-row v-else>
+            <ion-col size="12" size-md="8">
+              <div class="card">
+                <h2 class="title">Crear nueva planificación</h2>
+                <ion-list class="list-inset">
+                  <ion-item>
+                    <ion-label position="stacked">Alumno</ion-label>
+                    <ion-select v-model="nuevo.user_id" interface="popover" placeholder="Elegí un alumno">
+                      <ion-select-option v-for="al in alumnos" :key="al.id" :value="al.id">
+                        {{ al.nombre }} - {{ al.email }}
+                      </ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Título</ion-label>
+                    <ion-input v-model="nuevo.titulo" placeholder="Ej: Plan Hipertrofia 4 semanas" />
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Descripción</ion-label>
+                    <ion-textarea v-model="nuevo.descripcion" auto-grow placeholder="Notas generales" />
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Inicio</ion-label>
+                    <ion-input type="date" v-model="nuevo.fecha_inicio" />
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Fin</ion-label>
+                    <ion-input type="date" v-model="nuevo.fecha_fin" />
+                  </ion-item>
+                </ion-list>
+                <ion-button expand="block" class="ion-margin-top" :disabled="saving" @click="crearPlan">
+                  {{ saving ? 'Creando...' : 'Crear planificación' }}
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </div>
 
-      <!-- ================== TAB: PLAN NUEVO ================== -->
-      <div v-else-if="tab === 'plan-nuevo'">
-        <div class="card">
-          <h2 class="title">Crear Planificación</h2>
-
-          <ion-item>
-            <ion-label position="stacked">Alumno</ion-label>
-            <ion-select v-model.number="plan.user_id" placeholder="Elegí un alumno" interface="popover">
-              <ion-select-option v-for="a in alumnosLista" :key="a.id" :value="a.id">
-                #{{ a.id }} — {{ a.nombre }} ({{ a.email }})
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Título</ion-label>
-            <ion-input v-model="plan.titulo" />
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Descripción</ion-label>
-            <ion-textarea v-model="plan.descripcion" rows="4" />
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Fecha Inicio</ion-label>
-            <ion-datetime-button datetime="fi" />
-            <ion-modal keep-contents-mounted>
-              <ion-datetime id="fi" v-model="plan.fecha_inicio" presentation="date" />
-            </ion-modal>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Fecha Fin</ion-label>
-            <ion-datetime-button datetime="ff" />
-            <ion-modal keep-contents-mounted>
-              <ion-datetime id="ff" v-model="plan.fecha_fin" presentation="date" />
-            </ion-modal>
-          </ion-item>
-
-          <ion-button class="mt" @click="crearPlan">Crear Plan</ion-button>
-          <ion-text color="success" v-if="okPlan" class="ml">Plan creado ✅</ion-text>
-          <ion-text color="danger" v-if="errPlan" class="ml">{{ errPlan }}</ion-text>
-        </div>
-      </div>
-
-      <!-- ================== TAB: PLANES ================== -->
-      <div v-else>
-        <div class="card">
-          <div class="row-between">
-            <h2 class="title">Planificaciones</h2>
-            <ion-button size="small" fill="clear" @click="cargarPlanificaciones">Actualizar</ion-button>
-          </div>
-
-          <div class="filters">
-            <ion-item>
-              <ion-label position="stacked">Filtrar por alumno (id)</ion-label>
-              <ion-input v-model.number="filtroAlumnoId" type="number" placeholder="ej: 2" />
-            </ion-item>
-            <ion-button size="small" class="mt" @click="cargarPlanificaciones">Aplicar filtro</ion-button>
-            <ion-button size="small" fill="clear" class="mt" @click="limpiarFiltro">Limpiar</ion-button>
-          </div>
-
-          <ion-list class="mt">
-            <ion-item
-              v-for="p in planificaciones"
-              :key="p.id"
-              button
-              @click="$router.push(`/planificacion/${p.id}`)"
-            >
-              <ion-label>
-                <strong>{{ p.titulo }}</strong>
-                <p>Alumno: {{ p.alumno_nombre }} · {{ p.fecha_inicio }} → {{ p.fecha_fin }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-        </div>
-      </div>
-
+      <!-- FAB acción rápida -->
+      <ion-fab slot="fixed" horizontal="end" vertical="bottom">
+        <ion-fab-button @click="tab='plan-nuevo'" aria-label="Crear plan">
+          <ion-icon name="add-outline" />
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   </ion-page>
 </template>
@@ -256,166 +123,53 @@
 <script setup>
 import TopBar from '@/components/TopBar.vue'
 import {
-  IonPage, IonContent, IonLabel, IonButton, IonText, IonList, IonItem, IonInput, IonTextarea,
-  IonDatetime, IonDatetimeButton, IonModal, IonSelect, IonSelectOption, IonFab, IonFabButton,
-  IonIcon, IonBadge, IonSearchbar, IonSegment, IonSegmentButton
+  IonPage, IonContent, IonGrid, IonRow, IonCol, IonList, IonItem, IonLabel,
+  IonSegment, IonSegmentButton, IonSearchbar, IonSkeletonText, IonFab, IonFabButton, IonIcon,
+  IonButton, IonInput, IonTextarea, IonSelect, IonSelectOption
 } from '@ionic/vue'
-import { add } from 'ionicons/icons'
-import { ref, onMounted } from 'vue'
-import { alumnos as alumnosApi, planificaciones as planApi } from '@/services/api'
+import { ref } from 'vue'
+import { alumnos as apiAlumnos, planificaciones as apiPlanif } from '@/services/api'
 
-// ---- estado UI
 const tab = ref('alumnos')
-const onTabChange = (ev) => { tab.value = ev.detail.value }
 
-// ---- alumnos
-const buscar = ref('')
-const alumnosLista = ref([])
-const alumno = ref({
-  nombre: '', email: '', password: '',
-  sexo: null, edad: null, altura_cm: null,
-  peso_actual_kg: null, peso_objetivo_kg: null
-})
-const abrirModalCrear = ref(false)
-const okAlumno = ref(false)
-const errAlumno = ref('')
+const alumnos = ref([])
+const planes = ref([])
+const loadingAlumnos = ref(false)
+const loadingPlanes = ref(false)
+const search = ref('')
 
-const editAlumno = ref(null)
-const okEdit = ref(false)
-const errEdit = ref('')
+const nuevo = ref({ user_id: null, titulo: '', descripcion: '', fecha_inicio: '', fecha_fin: '' })
+const saving = ref(false)
 
-// ---- plan
-const plan = ref({ user_id: null, titulo: '', descripcion: '', fecha_inicio: '', fecha_fin: '' })
-const okPlan = ref(false)
-const errPlan = ref('')
-
-// ---- planificaciones
-const planificaciones = ref([])
-const filtroAlumnoId = ref(null)
-
-// API: alumnos
-const cargarAlumnos = async () => {
-  try {
-    alumnosLista.value = await alumnosApi.listar(buscar.value)
-  } catch (e) { console.error(e) }
+const fetchAlumnos = async () => {
+  loadingAlumnos.value = true
+  try { alumnos.value = await apiAlumnos.listar(search.value || '') } finally { loadingAlumnos.value = false }
 }
-const preEditarAlumno = (a) => { editAlumno.value = { ...a }; okEdit.value = false; errEdit.value = '' }
-const guardarAlumno = async () => {
-  try {
-    await alumnosApi.actualizar(editAlumno.value.id, {
-      nombre: editAlumno.value.nombre || null,
-      email: editAlumno.value.email || null,
-      sexo: editAlumno.value.sexo || null,
-      edad: editAlumno.value.edad ?? null,
-      altura_cm: editAlumno.value.altura_cm ?? null,
-      peso_actual_kg: editAlumno.value.peso_actual_kg ?? null,
-      peso_objetivo_kg: editAlumno.value.peso_objetivo_kg ?? null
-    })
-    okEdit.value = true
-    await cargarAlumnos()
-  } catch (e) {
-    okEdit.value = false
-    errEdit.value = e?.response?.data?.message || 'Error al actualizar'
-  }
-}
-const cancelarEdicion = () => { editAlumno.value = null }
-
-const limpiarAlumnoForm = () => {
-  alumno.value = {
-    nombre: '', email: '', password: '',
-    sexo: null, edad: null, altura_cm: null,
-    peso_actual_kg: null, peso_objetivo_kg: null
-  }
-}
-const crearAlumno = async () => {
-  okAlumno.value = false; errAlumno.value = ''
-  try {
-    await alumnosApi.crear(alumno.value)
-    okAlumno.value = true
-    limpiarAlumnoForm()
-    abrirModalCrear.value = false
-    await cargarAlumnos()
-  } catch (e) {
-    errAlumno.value = e?.response?.data?.message || 'Error creando alumno'
-  }
+const fetchPlanes = async (params={}) => {
+  loadingPlanes.value = true
+  try { planes.value = await apiPlanif.listar(params) } finally { loadingPlanes.value = false }
 }
 
-// API: planes
+let t
+const fetchAlumnosDebounced = () => { clearTimeout(t); t = setTimeout(fetchAlumnos, 250) }
+const filtrarPorAlumno = async (id) => { tab.value = 'planes'; await fetchPlanes({ user_id: id }) }
+
 const crearPlan = async () => {
-  okPlan.value = false; errPlan.value = ''
+  if (!nuevo.value.user_id || !nuevo.value.titulo) return alert('Alumno y título son obligatorios')
+  saving.value = true
   try {
-    await planApi.crear(plan.value)
-    okPlan.value = true
-    await cargarPlanificaciones()
+    await apiPlanif.crear({ ...nuevo.value })
+    alert('Planificación creada')
+    nuevo.value = { user_id: null, titulo: '', descripcion: '', fecha_inicio: '', fecha_fin: '' }
+    tab.value = 'planes'
+    await fetchPlanes()
   } catch (e) {
-    errPlan.value = e?.response?.data?.message || 'Error creando planificación'
+    alert(e?.response?.data?.message || 'Error al crear')
+  } finally {
+    saving.value = false
   }
 }
-const cargarPlanificaciones = async () => {
-  const params = {}
-  if (filtroAlumnoId.value) params.user_id = filtroAlumnoId.value
-  try {
-    planificaciones.value = await planApi.listar(params)
-  } catch (e) { console.error(e) }
-}
-const limpiarFiltro = async () => { filtroAlumnoId.value = null; await cargarPlanificaciones() }
 
-const usarAlumnoParaPlan = (id) => {
-  plan.value.user_id = id
-  tab.value = 'plan-nuevo'
-}
-const filtrarPlanificaciones = async (id) => {
-  filtroAlumnoId.value = id
-  tab.value = 'planes'
-  await cargarPlanificaciones()
-}
-
-onMounted(async () => {
-  await cargarAlumnos()
-  await cargarPlanificaciones()
-})
+fetchAlumnos()
+fetchPlanes()
 </script>
-
-<style scoped>
-.seg { margin-bottom: 12px; }
-
-.card {
-  background: var(--ion-item-background);
-  color: var(--ion-text-color);
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.06);
-}
-.card + .card { margin-top: 16px; }
-.card .title { margin: 0 0 8px; font-size: 18px; }
-.card .title, .card strong, .card small, .card p, .card h2, .card h3, .card ion-label {
-  color: var(--ion-text-color);
-}
-
-ion-list ion-item {
- --fondo: transparente; 
-  --color: var(--ion-text-color);
-}
-
-ion-list ion-item ion-label, 
-ion-list ion-item ion-label * { 
-  color: var(--ion-text-color);
-}
-
-.row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.row-end { display: flex; justify-content: flex-end; gap: 8px; }
-.mt { margin-top: 12px; }
-.ml { margin-left: 8px; }
-.btns ion-button { margin-left: 0px; }
-
-.modal-container {
-  padding: 16px;
-  background: var(--ion-background-color);
-  color: var(--ion-text-color);
-}
-
-.filters { display: grid; grid-template-columns: 1fr; gap: 8px; }
-@media (min-width: 640px) {
-  .filters { grid-template-columns: 1fr auto auto; align-items: end; }
-}
-</style>

@@ -1,3 +1,5 @@
+// frontend_figueroa_coach/src/services/api.js
+
 import axios from 'axios'
 
 // Usa /api por defecto (Vite proxy) o lo que pongas en .env

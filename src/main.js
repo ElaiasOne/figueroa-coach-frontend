@@ -1,3 +1,4 @@
+// frontend_figueroa_coach/src/main.js
 import { createApp } from 'vue'
 import { IonicVue } from '@ionic/vue'
 import router from './router'
@@ -21,10 +22,12 @@ import './assets/theme.css'
 
 import App from './App.vue'
 
-document.body.classList.remove('dark');
+document.body.classList.remove('dark')
 
 const app = createApp(App).use(IonicVue).use(router)
 
 router.isReady().then(() => {
+  // Restablecer scroll al montar (mejora UX móvil al navegar entre vistas)
+  window.scrollTo({ top: 0, behavior: 'instant' })
   app.mount('#app')
 })
