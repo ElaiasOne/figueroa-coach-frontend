@@ -1,6 +1,6 @@
 <template>
   <!-- Fondo sólido para asegurar contraste -->
-  <ion-header :translucent="false" class="topbar">
+  <ion-header v-if="!isLogin" :translucent="false" class="topbar">
     <ion-toolbar color="light">
       <ion-title class="topbar-title">FIGUEROA COACH</ion-title>
 
