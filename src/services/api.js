@@ -54,8 +54,10 @@ export const alumnos = {
   async listar(search='') { const { data } = await api.get('/auth/alumnos', { params: { search } }); return data },
   async detalle(id) { const { data } = await api.get(`/auth/alumnos/${id}`); return data },
   async actualizar(id, payload) { const { data } = await api.put(`/auth/alumnos/${id}`, payload); return data },
-  async eliminar(id) { const { data } = await api.delete(`/auth/alumnos/${id}`); return data } // <-- NUEVO
+  async eliminar(id) { const { data } = await api.delete(`/auth/alumnos/${id}`); return data },
+  async resetPassword(id, password) { const { data } = await api.put(`/auth/alumnos/${id}/password`, { password }); return data } // <-- NUEVO
 }
+
 
 /* =================== PLANIFICACIONES =================== */
 export const planificaciones = {
