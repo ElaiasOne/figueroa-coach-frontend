@@ -490,11 +490,14 @@ const onConfirmEliminarAlumno = async () => {
     await fetchAlumnos()
     await fetchPlanes()
   } catch (e) {
-    alert(e?.response?.data?.message || 'No se pudo eliminar')
+    // Muestra mensaje del backend si viene, sino el genérico
+    const msg = e?.response?.data?.message || e?.response?.data?.error || 'No se pudo eliminar'
+    alert(msg)
   } finally {
     confirmEliminar.value = { isOpen: false, alumno: null }
   }
 }
+
 
 fetchAlumnos()
 fetchPlanes()
