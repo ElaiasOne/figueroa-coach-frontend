@@ -6,39 +6,44 @@
         <!-- ======= Planificación general ======= -->
         <ion-card>
           <ion-card-header>
-            <ion-card-title>
-              <div class="flex-between">
-                <span>{{ plan.titulo }}</span>
-                <ion-buttons v-if="isCoach">
-                  <ion-button
-                    size="small"
-                    fill="clear"
-                    color="medium"
-                    @click="toggleEditarPlan"
-                    aria-label="Editar planificación"
-                  >
-                    <ion-icon :name="editando ? 'close-outline' : 'create-outline'" />
-                  </ion-button>
-                  <ion-button
-                    size="small"
-                    fill="clear"
-                    color="danger"
-                    @click="openConfirmPlanDelete"
-                    aria-label="Eliminar planificación"
-                  >
-                    <ion-icon name="trash-outline" />
-                  </ion-button>
-                </ion-buttons>
+            <div class="header-row">
+              <div class="title-wrap">
+                <ion-card-title>{{ plan.titulo }}</ion-card-title>
+                <ion-card-subtitle>{{ rangoFechas }}</ion-card-subtitle>
               </div>
-            </ion-card-title>
-            <ion-card-subtitle>{{ rangoFechas }}</ion-card-subtitle>
+
+              <!-- Botones visibles (solo ENTRENADOR) -->
+              <div v-if="isCoach" class="action-wrap">
+                <ion-button
+                  size="small"
+                  fill="outline"
+                  color="dark"
+                  class="icon-btn"
+                  @click="toggleEditarPlan"
+                >
+                  <ion-icon :icon="editando ? closeOutline : createOutline" />
+                  <span class="btn-text">{{ editando ? 'Cerrar' : 'Editar' }}</span>
+                </ion-button>
+
+                <ion-button
+                  size="small"
+                  fill="outline"
+                  color="danger"
+                  class="icon-btn"
+                  @click="openConfirmPlanDelete"
+                >
+                  <ion-icon :icon="trashOutline" />
+                  <span class="btn-text">Eliminar</span>
+                </ion-button>
+              </div>
+            </div>
           </ion-card-header>
 
+          <!-- Ver/Editar descripción -->
           <ion-card-content v-if="!editando" class="multiline">
             {{ plan.descripcion || 'Sin descripción' }}
           </ion-card-content>
 
-          <!-- Formulario de edición de la planificación -->
           <ion-card-content v-else>
             <ion-list class="list-inset">
               <ion-item>
@@ -71,15 +76,13 @@
           <ion-accordion value="rutinas">
             <ion-item slot="header">
               <ion-label>Rutinas</ion-label>
-              <ion-button
-                v-if="isCoach"
-                slot="end"
-                fill="clear"
-                color="primary"
-                @click.stop="abrirModal('rutina','create')"
-              >
-                <ion-icon name="add-outline" />
-              </ion-button>
+              <div v-if="isCoach" class="header-actions" slot="end">
+                <ion-button size="small" fill="outline" color="primary" class="icon-btn"
+                            @click.stop="abrirModal('rutina','create')">
+                  <ion-icon :icon="addOutline" />
+                  <span class="btn-text">Agregar</span>
+                </ion-button>
+              </div>
             </ion-item>
             <div slot="content" class="ion-padding">
               <ion-list class="list-inset" v-if="plan.rutinas?.length">
@@ -88,14 +91,16 @@
                     <h3>{{ r.dia_semana }}</h3>
                     <p class="multiline">{{ r.descripcion }}</p>
                   </ion-label>
-                  <ion-buttons slot="end" v-if="isCoach">
-                    <ion-button fill="clear" color="primary" @click="abrirModal('rutina','edit', r)">
-                      <ion-icon name="create-outline" />
+                  <div v-if="isCoach" class="row-actions" slot="end">
+                    <ion-button size="small" fill="clear" color="dark" class="icon-btn" @click="abrirModal('rutina','edit', r)">
+                      <ion-icon :icon="createOutline" />
+                      <span class="btn-text">Editar</span>
                     </ion-button>
-                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('rutina', r.id)">
-                      <ion-icon name="trash-outline" />
+                    <ion-button size="small" fill="clear" color="danger" class="icon-btn" @click="openConfirmItemDelete('rutina', r.id)">
+                      <ion-icon :icon="trashOutline" />
+                      <span class="btn-text">Borrar</span>
                     </ion-button>
-                  </ion-buttons>
+                  </div>
                 </ion-item>
               </ion-list>
               <ion-text v-else>Sin rutinas</ion-text>
@@ -106,15 +111,13 @@
           <ion-accordion value="alimentacion">
             <ion-item slot="header">
               <ion-label>Alimentación</ion-label>
-              <ion-button
-                v-if="isCoach"
-                slot="end"
-                fill="clear"
-                color="primary"
-                @click.stop="abrirModal('alimentacion','create')"
-              >
-                <ion-icon name="add-outline" />
-              </ion-button>
+              <div v-if="isCoach" class="header-actions" slot="end">
+                <ion-button size="small" fill="outline" color="primary" class="icon-btn"
+                            @click.stop="abrirModal('alimentacion','create')">
+                  <ion-icon :icon="addOutline" />
+                  <span class="btn-text">Agregar</span>
+                </ion-button>
+              </div>
             </ion-item>
             <div slot="content" class="ion-padding">
               <ion-list class="list-inset" v-if="plan.alimentaciones?.length">
@@ -123,14 +126,16 @@
                     <h3>{{ a.comida }}</h3>
                     <p class="multiline">{{ a.descripcion }}</p>
                   </ion-label>
-                  <ion-buttons slot="end" v-if="isCoach">
-                    <ion-button fill="clear" color="primary" @click="abrirModal('alimentacion','edit', a)">
-                      <ion-icon name="create-outline" />
+                  <div v-if="isCoach" class="row-actions" slot="end">
+                    <ion-button size="small" fill="clear" color="dark" class="icon-btn" @click="abrirModal('alimentacion','edit', a)">
+                      <ion-icon :icon="createOutline" />
+                      <span class="btn-text">Editar</span>
                     </ion-button>
-                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('alimentacion', a.id)">
-                      <ion-icon name="trash-outline" />
+                    <ion-button size="small" fill="clear" color="danger" class="icon-btn" @click="openConfirmItemDelete('alimentacion', a.id)">
+                      <ion-icon :icon="trashOutline" />
+                      <span class="btn-text">Borrar</span>
                     </ion-button>
-                  </ion-buttons>
+                  </div>
                 </ion-item>
               </ion-list>
               <ion-text v-else>Sin guías de alimentación</ion-text>
@@ -141,28 +146,28 @@
           <ion-accordion value="suplementacion">
             <ion-item slot="header">
               <ion-label>Suplementación</ion-label>
-              <ion-button
-                v-if="isCoach"
-                slot="end"
-                fill="clear"
-                color="primary"
-                @click.stop="abrirModal('suplementacion','create')"
-              >
-                <ion-icon name="add-outline" />
-              </ion-button>
+              <div v-if="isCoach" class="header-actions" slot="end">
+                <ion-button size="small" fill="outline" color="primary" class="icon-btn"
+                            @click.stop="abrirModal('suplementacion','create')">
+                  <ion-icon :icon="addOutline" />
+                  <span class="btn-text">Agregar</span>
+                </ion-button>
+              </div>
             </ion-item>
             <div slot="content" class="ion-padding">
               <ion-list class="list-inset" v-if="plan.suplementaciones?.length">
                 <ion-item v-for="s in plan.suplementaciones" :key="s.id">
                   <ion-label><p class="multiline">{{ s.descripcion }}</p></ion-label>
-                  <ion-buttons slot="end" v-if="isCoach">
-                    <ion-button fill="clear" color="primary" @click="abrirModal('suplementacion','edit', s)">
-                      <ion-icon name="create-outline" />
+                  <div v-if="isCoach" class="row-actions" slot="end">
+                    <ion-button size="small" fill="clear" color="dark" class="icon-btn" @click="abrirModal('suplementacion','edit', s)">
+                      <ion-icon :icon="createOutline" />
+                      <span class="btn-text">Editar</span>
                     </ion-button>
-                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('suplementacion', s.id)">
-                      <ion-icon name="trash-outline" />
+                    <ion-button size="small" fill="clear" color="danger" class="icon-btn" @click="openConfirmItemDelete('suplementacion', s.id)">
+                      <ion-icon :icon="trashOutline" />
+                      <span class="btn-text">Borrar</span>
                     </ion-button>
-                  </ion-buttons>
+                  </div>
                 </ion-item>
               </ion-list>
               <ion-text v-else>Sin suplementación</ion-text>
@@ -175,9 +180,7 @@
           <ion-header translucent>
             <ion-toolbar>
               <ion-title>{{ modalTitle }}</ion-title>
-              <ion-buttons slot="end">
-                <ion-button @click="cerrarModal">Cerrar</ion-button>
-              </ion-buttons>
+              <ion-button slot="end" fill="clear" color="dark" @click="cerrarModal">Cerrar</ion-button>
             </ion-toolbar>
           </ion-header>
           <ion-content class="ion-padding">
@@ -237,12 +240,13 @@ import TopBar from '@/components/TopBar.vue'
 import {
   IonPage, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
   IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonList, IonText,
-  IonButton, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons,
-  IonInput, IonTextarea, IonAlert
+  IonButton, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle,
+  IonInput, IonTextarea, IonAlert, IonSkeletonText
 } from '@ionic/vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { planificaciones as apiPlanif } from '@/services/api'
+import { addOutline, createOutline, trashOutline, closeOutline } from 'ionicons/icons'
 
 const route = useRoute()
 const router = useRouter()
@@ -309,6 +313,10 @@ const guardarPlan = async () => {
 }
 
 /* ======= MODAL (crear/editar) ======= */
+const modalTitle = computed(() => {
+  const map = { rutina: 'Rutina', alimentacion: 'Alimentación', suplementacion: 'Suplementación' }
+  return `${modalMode.value === 'create' ? 'Agregar' : 'Editar'} ${map[modalType.value] || ''}`
+})
 const abrirModal = (tipo, modo, item = null) => {
   modalType.value = tipo
   modalMode.value = modo
@@ -363,14 +371,12 @@ const guardarItem = async () => {
 }
 
 /* ======= ELIMINAR ITEMS (con alert) ======= */
-const openConfirmItemDelete = (type, id) => {
-  confirmItemDelete.value = { isOpen: true, type, id }
-}
+const openConfirmItemDelete = (type, id) => { confirmItemDelete.value = { isOpen: true, type, id } }
 const onConfirmItemDelete = async () => {
   const { type, id } = confirmItemDelete.value
   try {
-    if (type === 'rutina')       await apiPlanif.delRutina(id)
-    if (type === 'alimentacion') await apiPlanif.delAlimentacion(id)
+    if (type === 'rutina')         await apiPlanif.delRutina(id)
+    if (type === 'alimentacion')   await apiPlanif.delAlimentacion(id)
     if (type === 'suplementacion') await apiPlanif.delSuplementacion(id)
     await cargar()
   } catch { alert('No se pudo eliminar') }
@@ -379,9 +385,20 @@ const onConfirmItemDelete = async () => {
 </script>
 
 <style scoped>
-.flex-between {
+.header-row {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+}
+.title-wrap { min-width: 0; }
+.action-wrap, .header-actions, .row-actions {
+  display: flex; gap: 8px; align-items: center;
+}
+.icon-btn ion-icon { margin-right: 6px; }
+.btn-text { display: inline-block; }
+@media (max-width: 360px) {
+  .btn-text { display: none; } /* en pantallas súper chicas, solo iconos */
 }
 </style>
