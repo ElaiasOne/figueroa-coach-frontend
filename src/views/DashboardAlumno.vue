@@ -22,9 +22,9 @@
           <h2 class="title">Mis planificaciones</h2>
           <ion-list class="list-inset">
             <ion-item
-              v-for="p in planes" :key="p.id"
-              button detail
-              @click="$router.push(`/planificacion/${p.id}`)">
+  v-for="p in planes" :key="p.id"
+  button detail
+  @click="$router.push({ name: 'PlanDetalle', params: { id: p.id } })">
               <ion-label>
                 <h3>{{ p.titulo }}</h3>
                 <p>{{ rango(p.fecha_inicio, p.fecha_fin) }}</p>

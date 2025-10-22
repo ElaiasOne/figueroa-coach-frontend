@@ -125,9 +125,9 @@
                 <h2 class="title">Todos los planes</h2>
                 <ion-list class="list-inset">
                   <ion-item
-                    v-for="p in planes" :key="p.id"
-                    button detail
-                    @click="$router.push(`/planificacion/${p.id}`)">
+  v-for="p in planes" :key="p.id"
+  button detail
+  @click="$router.push({ name: 'PlanDetalle', params: { id: p.id } })">
                     <ion-label>
                       <h3>{{ p.titulo }}</h3>
                       <p>{{ p.descripcion || 'Sin descripción' }}</p>
