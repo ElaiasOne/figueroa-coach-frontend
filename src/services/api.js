@@ -81,5 +81,19 @@ export const planificaciones = {
   async delSuplementacion(id) { const { data } = await api.delete(`/planificaciones/suplementaciones/${id}`); return data }
 }
 
+api.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response && err.response.status === 401) {
+      localStorage.clear()
+      window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  }
+)
+
+
+
 export { api }          // export named (por si lo necesitás)
 export default api      // export default (si lo importás como default)
+

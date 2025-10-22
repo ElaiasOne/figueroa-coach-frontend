@@ -2,6 +2,7 @@
 import { createApp } from 'vue'
 import { IonicVue } from '@ionic/vue'
 import router from './router'
+import { auth } from './services/api'
 
 /* Ionic core css */
 import '@ionic/vue/css/core.css'
@@ -31,3 +32,5 @@ router.isReady().then(() => {
   window.scrollTo({ top: 0, behavior: 'instant' })
   app.mount('#app')
 })
+
+auth.initFromStorage()
