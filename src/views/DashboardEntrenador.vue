@@ -131,6 +131,7 @@
                     <ion-label>
                       <h3>{{ p.titulo }}</h3>
                       <p>{{ p.descripcion || 'Sin descripción' }}</p>
+                      <small v-if="p.alumno_nombre">Alumno: {{ p.alumno_nombre }}</small>
                     </ion-label>
                   </ion-item>
                 </ion-list>
