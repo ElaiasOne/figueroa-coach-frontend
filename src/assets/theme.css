@@ -99,3 +99,31 @@ ion-content { --padding-bottom: 80px; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ===== Fix TopBar: contraste y visibilidad de iconos/botones ===== */
+ion-header,
+ion-toolbar {
+  --background: #ffffff !important;   /* fondo sólido */
+  --color: #111111 !important;        /* texto/iconos oscuros */
+}
+
+ion-toolbar {
+  border-bottom: 1px solid #e9e9ef;   /* separador sutil */
+}
+
+/* Asegurar color de iconos dentro del toolbar */
+ion-toolbar ion-icon {
+  color: currentColor !important;
+  opacity: 1 !important;
+}
+
+/* Botones del TopBar bien visibles */
+ion-toolbar ion-button {
+  --background: transparent;
+  --color: #111111;
+}
+
+/* En pantallas muy chicas, ocultar texto de los botones del topbar (queda solo el ícono) */
+@media (max-width: 380px) {
+  .topbar .btn-text { display: none; }
+}
