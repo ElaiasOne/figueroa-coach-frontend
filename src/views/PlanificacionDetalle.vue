@@ -9,16 +9,26 @@
             <ion-card-title>
               <div class="flex-between">
                 <span>{{ plan.titulo }}</span>
-                <ion-button
-                  v-if="isCoach"
-                  size="small"
-                  fill="clear"
-                  color="medium"
-                  @click="editando = !editando"
-                  aria-label="Editar planificación"
-                >
-                  <ion-icon :name="editando ? 'close-outline' : 'create-outline'" />
-                </ion-button>
+                <ion-buttons v-if="isCoach">
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    color="medium"
+                    @click="toggleEditarPlan"
+                    aria-label="Editar planificación"
+                  >
+                    <ion-icon :name="editando ? 'close-outline' : 'create-outline'" />
+                  </ion-button>
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    color="danger"
+                    @click="openConfirmPlanDelete"
+                    aria-label="Eliminar planificación"
+                  >
+                    <ion-icon name="trash-outline" />
+                  </ion-button>
+                </ion-buttons>
               </div>
             </ion-card-title>
             <ion-card-subtitle>{{ rangoFechas }}</ion-card-subtitle>
@@ -48,11 +58,8 @@
                 <ion-input type="date" v-model="formPlan.fecha_fin" />
               </ion-item>
             </ion-list>
-            <ion-button expand="block" class="ion-margin-top" @click="guardarPlan">
-              Guardar cambios
-            </ion-button>
-            <ion-button expand="block" color="danger" fill="outline" @click="eliminarPlan">
-              Eliminar planificación
+            <ion-button expand="block" class="ion-margin-top" :disabled="savingPlan" @click="guardarPlan">
+              {{ savingPlan ? 'Guardando...' : 'Guardar cambios' }}
             </ion-button>
           </ion-card-content>
         </ion-card>
@@ -69,29 +76,27 @@
                 slot="end"
                 fill="clear"
                 color="primary"
-                @click.stop="abrirModal('rutina')"
+                @click.stop="abrirModal('rutina','create')"
               >
                 <ion-icon name="add-outline" />
               </ion-button>
             </ion-item>
             <div slot="content" class="ion-padding">
               <ion-list class="list-inset" v-if="plan.rutinas?.length">
-                <ion-item-sliding v-for="r in plan.rutinas" :key="r.id">
-                  <ion-item>
-                    <ion-label>
-                      <h3>{{ r.dia_semana }}</h3>
-                      <p class="multiline">{{ r.descripcion }}</p>
-                    </ion-label>
-                    <ion-buttons slot="end" v-if="isCoach">
-                      <ion-button fill="clear" color="primary" @click="editarRutina(r)">
-                        <ion-icon name="create-outline" />
-                      </ion-button>
-                      <ion-button fill="clear" color="danger" @click="borrarRutina(r)">
-                        <ion-icon name="trash-outline" />
-                      </ion-button>
-                    </ion-buttons>
-                  </ion-item>
-                </ion-item-sliding>
+                <ion-item v-for="r in plan.rutinas" :key="r.id">
+                  <ion-label>
+                    <h3>{{ r.dia_semana }}</h3>
+                    <p class="multiline">{{ r.descripcion }}</p>
+                  </ion-label>
+                  <ion-buttons slot="end" v-if="isCoach">
+                    <ion-button fill="clear" color="primary" @click="abrirModal('rutina','edit', r)">
+                      <ion-icon name="create-outline" />
+                    </ion-button>
+                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('rutina', r.id)">
+                      <ion-icon name="trash-outline" />
+                    </ion-button>
+                  </ion-buttons>
+                </ion-item>
               </ion-list>
               <ion-text v-else>Sin rutinas</ion-text>
             </div>
@@ -106,7 +111,7 @@
                 slot="end"
                 fill="clear"
                 color="primary"
-                @click.stop="abrirModal('alimentacion')"
+                @click.stop="abrirModal('alimentacion','create')"
               >
                 <ion-icon name="add-outline" />
               </ion-button>
@@ -119,10 +124,10 @@
                     <p class="multiline">{{ a.descripcion }}</p>
                   </ion-label>
                   <ion-buttons slot="end" v-if="isCoach">
-                    <ion-button fill="clear" color="primary" @click="editarAlimentacion(a)">
+                    <ion-button fill="clear" color="primary" @click="abrirModal('alimentacion','edit', a)">
                       <ion-icon name="create-outline" />
                     </ion-button>
-                    <ion-button fill="clear" color="danger" @click="borrarAlimentacion(a)">
+                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('alimentacion', a.id)">
                       <ion-icon name="trash-outline" />
                     </ion-button>
                   </ion-buttons>
@@ -141,7 +146,7 @@
                 slot="end"
                 fill="clear"
                 color="primary"
-                @click.stop="abrirModal('suplementacion')"
+                @click.stop="abrirModal('suplementacion','create')"
               >
                 <ion-icon name="add-outline" />
               </ion-button>
@@ -151,10 +156,10 @@
                 <ion-item v-for="s in plan.suplementaciones" :key="s.id">
                   <ion-label><p class="multiline">{{ s.descripcion }}</p></ion-label>
                   <ion-buttons slot="end" v-if="isCoach">
-                    <ion-button fill="clear" color="primary" @click="editarSuplementacion(s)">
+                    <ion-button fill="clear" color="primary" @click="abrirModal('suplementacion','edit', s)">
                       <ion-icon name="create-outline" />
                     </ion-button>
-                    <ion-button fill="clear" color="danger" @click="borrarSuplementacion(s)">
+                    <ion-button fill="clear" color="danger" @click="openConfirmItemDelete('suplementacion', s.id)">
                       <ion-icon name="trash-outline" />
                     </ion-button>
                   </ion-buttons>
@@ -165,7 +170,7 @@
           </ion-accordion>
         </ion-accordion-group>
 
-        <!-- MODAL DE EDICIÓN -->
+        <!-- ======= MODAL CREAR/EDITAR ITEM ======= -->
         <ion-modal :is-open="showModal" @didDismiss="cerrarModal">
           <ion-header translucent>
             <ion-toolbar>
@@ -179,20 +184,47 @@
             <ion-list class="list-inset">
               <ion-item v-if="modalType==='rutina'">
                 <ion-label position="stacked">Día</ion-label>
-                <ion-input v-model="form.dia_semana" placeholder="Ej: Lunes" />
+                <ion-input v-model="formItem.dia_semana" placeholder="Ej: Lunes" />
               </ion-item>
+
               <ion-item v-if="modalType==='alimentacion'">
                 <ion-label position="stacked">Comida</ion-label>
-                <ion-input v-model="form.comida" placeholder="Desayuno / Almuerzo..." />
+                <ion-input v-model="formItem.comida" placeholder="Desayuno / Almuerzo / Cena / Merienda / Colación" />
               </ion-item>
+
               <ion-item>
                 <ion-label position="stacked">Descripción</ion-label>
-                <ion-textarea v-model="form.descripcion" auto-grow />
+                <ion-textarea v-model="formItem.descripcion" auto-grow placeholder="Detalle del contenido" />
               </ion-item>
             </ion-list>
-            <ion-button expand="block" @click="guardarItem">Guardar</ion-button>
+
+            <ion-button expand="block" class="ion-margin-top" :disabled="savingItem" @click="guardarItem">
+              {{ savingItem ? 'Guardando...' : (modalMode==='create' ? 'Crear' : 'Guardar cambios') }}
+            </ion-button>
           </ion-content>
         </ion-modal>
+
+        <!-- ======= ALERTS DE CONFIRMACIÓN ======= -->
+        <ion-alert
+          :is-open="confirmPlanDelete"
+          header="Eliminar planificación"
+          message="Se eliminará la planificación y todos sus contenidos. ¿Continuar?"
+          :buttons="[
+            { text:'Cancelar', role:'cancel', handler:() => confirmPlanDelete=false },
+            { text:'Eliminar', role:'destructive', handler: onConfirmPlanDelete }
+          ]"
+          @didDismiss="confirmPlanDelete=false"
+        />
+        <ion-alert
+          :is-open="confirmItemDelete.isOpen"
+          header="Eliminar elemento"
+          message="Esta acción no se puede deshacer. ¿Eliminar?"
+          :buttons="[
+            { text:'Cancelar', role:'cancel', handler:() => confirmItemDelete.isOpen=false },
+            { text:'Eliminar', role:'destructive', handler: onConfirmItemDelete }
+          ]"
+          @didDismiss="confirmItemDelete.isOpen=false"
+        />
       </div>
 
       <ion-skeleton-text v-else :animated="true" style="height: 160px" />
@@ -206,7 +238,7 @@ import {
   IonPage, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
   IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonList, IonText,
   IonButton, IonIcon, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons,
-  IonInput, IonTextarea, IonItemSliding
+  IonInput, IonTextarea, IonAlert
 } from '@ionic/vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -215,29 +247,24 @@ import { planificaciones as apiPlanif } from '@/services/api'
 const route = useRoute()
 const router = useRouter()
 const plan = ref(null)
-const editando = ref(false)
 const isCoach = localStorage.getItem('role') === 'ENTRENADOR'
 
-// form edición planificación
+/* -------- plan (editar / eliminar) -------- */
+const editando = ref(false)
+const savingPlan = ref(false)
 const formPlan = ref({ titulo: '', descripcion: '', fecha_inicio: '', fecha_fin: '' })
+const confirmPlanDelete = ref(false)
 
-// modal genérico para rutinas / alimentaciones / suplementaciones
+/* -------- modal crear/editar item -------- */
 const showModal = ref(false)
-const modalType = ref('')
-const form = ref({})
-const modalTitle = computed(() => {
-  if (modalType.value === 'rutina') return 'Rutina'
-  if (modalType.value === 'alimentacion') return 'Alimentación'
-  if (modalType.value === 'suplementacion') return 'Suplementación'
-  return ''
-})
+const modalType = ref('')            // 'rutina' | 'alimentacion' | 'suplementacion'
+const modalMode = ref('create')      // 'create' | 'edit'
+const currentItemId = ref(null)
+const savingItem = ref(false)
+const formItem = ref({ descripcion: '', dia_semana: '', comida: '' })
 
-const abrirModal = (tipo) => {
-  modalType.value = tipo
-  form.value = { descripcion: '', dia_semana: '', comida: '' }
-  showModal.value = true
-}
-const cerrarModal = () => { showModal.value = false }
+/* -------- alert eliminar item -------- */
+const confirmItemDelete = ref({ isOpen: false, type: '', id: null })
 
 const rangoFechas = computed(() => {
   if (!plan.value) return ''
@@ -251,29 +278,17 @@ const cargar = async () => {
   try { plan.value = await apiPlanif.detalle(route.params.id) } catch { alert('Error al cargar') }
   if (plan.value) {
     formPlan.value = {
-      titulo: plan.value.titulo,
-      descripcion: plan.value.descripcion,
-      fecha_inicio: plan.value.fecha_inicio,
-      fecha_fin: plan.value.fecha_fin
+      titulo: plan.value.titulo ?? '',
+      descripcion: plan.value.descripcion ?? '',
+      fecha_inicio: plan.value.fecha_inicio ?? '',
+      fecha_fin: plan.value.fecha_fin ?? ''
     }
   }
 }
 
-/* ======= ACCIONES ======= */
-
-// GUARDAR planificación
-const guardarPlan = async () => {
-  try {
-    await apiPlanif.actualizar(plan.value.id, formPlan.value)
-    alert('Planificación actualizada')
-    editando.value = false
-    await cargar()
-  } catch (e) { alert('Error al guardar') }
-}
-
-// ELIMINAR planificación
-const eliminarPlan = async () => {
-  if (!confirm('¿Eliminar esta planificación y todo su contenido?')) return
+const toggleEditarPlan = () => { editando.value = !editando.value }
+const openConfirmPlanDelete = () => { confirmPlanDelete.value = true }
+const onConfirmPlanDelete = async () => {
   try {
     await apiPlanif.eliminar(plan.value.id)
     alert('Planificación eliminada')
@@ -281,49 +296,85 @@ const eliminarPlan = async () => {
   } catch { alert('Error al eliminar') }
 }
 
-/* ======= CRUD de items ======= */
+/* ======= GUARDAR PLAN ======= */
+const guardarPlan = async () => {
+  savingPlan.value = true
+  try {
+    await apiPlanif.actualizar(plan.value.id, formPlan.value)
+    editando.value = false
+    await cargar()
+    alert('Planificación actualizada')
+  } catch { alert('Error al guardar') }
+  finally { savingPlan.value = false }
+}
+
+/* ======= MODAL (crear/editar) ======= */
+const abrirModal = (tipo, modo, item = null) => {
+  modalType.value = tipo
+  modalMode.value = modo
+  if (modo === 'edit' && item) {
+    currentItemId.value = item.id
+    formItem.value = {
+      descripcion: item.descripcion ?? '',
+      dia_semana: item.dia_semana ?? '',
+      comida: item.comida ?? ''
+    }
+  } else {
+    currentItemId.value = null
+    formItem.value = { descripcion: '', dia_semana: '', comida: '' }
+  }
+  showModal.value = true
+}
+const cerrarModal = () => { showModal.value = false }
+
+/* ======= CRUD ITEMS ======= */
 const guardarItem = async () => {
+  savingItem.value = true
   try {
     if (modalType.value === 'rutina') {
-      await apiPlanif.addRutina({ planificacion_id: plan.value.id, ...form.value })
+      if (modalMode.value === 'create') {
+        await apiPlanif.addRutina({ planificacion_id: plan.value.id, ...formItem.value })
+      } else {
+        await apiPlanif.updRutina(currentItemId.value, {
+          dia_semana: formItem.value.dia_semana,
+          descripcion: formItem.value.descripcion
+        })
+      }
     } else if (modalType.value === 'alimentacion') {
-      await apiPlanif.addAlimentacion({ planificacion_id: plan.value.id, ...form.value })
+      if (modalMode.value === 'create') {
+        await apiPlanif.addAlimentacion({ planificacion_id: plan.value.id, ...formItem.value })
+      } else {
+        await apiPlanif.updAlimentacion(currentItemId.value, {
+          comida: formItem.value.comida,
+          descripcion: formItem.value.descripcion
+        })
+      }
     } else if (modalType.value === 'suplementacion') {
-      await apiPlanif.addSuplementacion({ planificacion_id: plan.value.id, ...form.value })
+      if (modalMode.value === 'create') {
+        await apiPlanif.addSuplementacion({ planificacion_id: plan.value.id, ...formItem.value })
+      } else {
+        await apiPlanif.updSuplementacion(currentItemId.value, { descripcion: formItem.value.descripcion })
+      }
     }
     showModal.value = false
     await cargar()
   } catch { alert('Error al guardar') }
+  finally { savingItem.value = false }
 }
 
-const editarRutina = async (r) => {
-  const desc = prompt('Editar rutina:', r.descripcion)
-  if (desc === null) return
-  await apiPlanif.updRutina(r.id, { dia_semana: r.dia_semana, descripcion: desc })
-  await cargar()
+/* ======= ELIMINAR ITEMS (con alert) ======= */
+const openConfirmItemDelete = (type, id) => {
+  confirmItemDelete.value = { isOpen: true, type, id }
 }
-const borrarRutina = async (r) => {
-  if (confirm('¿Eliminar rutina?')) { await apiPlanif.delRutina(r.id); await cargar() }
-}
-
-const editarAlimentacion = async (a) => {
-  const desc = prompt('Editar alimentación:', a.descripcion)
-  if (desc === null) return
-  await apiPlanif.updAlimentacion(a.id, { comida: a.comida, descripcion: desc })
-  await cargar()
-}
-const borrarAlimentacion = async (a) => {
-  if (confirm('¿Eliminar alimentación?')) { await apiPlanif.delAlimentacion(a.id); await cargar() }
-}
-
-const editarSuplementacion = async (s) => {
-  const desc = prompt('Editar suplementación:', s.descripcion)
-  if (desc === null) return
-  await apiPlanif.updSuplementacion(s.id, { descripcion: desc })
-  await cargar()
-}
-const borrarSuplementacion = async (s) => {
-  if (confirm('¿Eliminar suplementación?')) { await apiPlanif.delSuplementacion(s.id); await cargar() }
+const onConfirmItemDelete = async () => {
+  const { type, id } = confirmItemDelete.value
+  try {
+    if (type === 'rutina')       await apiPlanif.delRutina(id)
+    if (type === 'alimentacion') await apiPlanif.delAlimentacion(id)
+    if (type === 'suplementacion') await apiPlanif.delSuplementacion(id)
+    await cargar()
+  } catch { alert('No se pudo eliminar') }
+  finally { confirmItemDelete.value = { isOpen: false, type: '', id: null } }
 }
 </script>
 
