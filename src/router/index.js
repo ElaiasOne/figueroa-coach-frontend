@@ -8,10 +8,12 @@ import PlanificacionDetalle from '@/views/PlanificacionDetalle.vue'
 const routes = [
   { name: 'Root', path: '/', redirect: '/login' },
   { name: 'Login', path: '/login', component: LoginPage },
-  // estas dos sí son protegidas por rol:
+
+  // Accesos por rol
   { name: 'Coach', path: '/coach', component: DashboardEntrenador, meta: { role: 'ENTRENADOR' } },
   { name: 'Alumno', path: '/alumno', component: DashboardAlumno, meta: { role: 'ALUMNO' } },
-  // detalle accesible por AMBOS roles (sin meta.role):
+
+  // Detalle accesible por AMBOS roles (sin meta.role)
   { name: 'PlanDetalle', path: '/planificacion/:id', component: PlanificacionDetalle }
 ]
 
@@ -22,15 +24,18 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
-  const role = localStorage.getItem('role')
+  const role  = localStorage.getItem('role')
 
-  // libre acceso a login
+  // Siempre permitir login
   if (to.name === 'Login') return next()
 
-  // todo lo demás requiere token
+  // Requiere estar logueado para todo lo demás (incluye PlanDetalle)
   if (!token) return next({ name: 'Login' })
 
-  // si la ruta pide rol específico, validar
+  // ⚠️ Whitelist: nunca redirigir PlanDetalle por rol
+  if (to.name === 'PlanDetalle') return next()
+
+  // Para rutas con rol específico, validar
   if (to.meta?.role && to.meta.role !== role) {
     return next(role === 'ENTRENADOR' ? { name: 'Coach' } : { name: 'Alumno' })
   }
